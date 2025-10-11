@@ -1,0 +1,20 @@
+{
+  "name": "ultimate-memory-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ultimate Memory - Universal AI Memory Management System",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "start:backend": "cd backend && npm start",
+    "clean": "rm -rf backend/node_modules backend/dist frontend/node_modules frontend/dist"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

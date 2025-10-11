@@ -13,6 +13,7 @@ Thank you for your interest in contributing to Ultimate Memory!
    ```
 4. Create a `.env` file in the backend directory (use `.env.example` as template)
 5. Start development servers:
+
    ```bash
    # Terminal 1 - Backend
    cd backend && npm run dev
