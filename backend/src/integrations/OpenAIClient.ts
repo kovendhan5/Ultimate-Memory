@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
-import { AIClient, AIResponse } from './AIModelFactory';
 import { Message } from '../core/MemoryManager';
 import { logger } from '../utils/logger';
+import { AIClient, AIResponse } from './AIModelFactory';
 
 export class OpenAIClient implements AIClient {
   private client: OpenAI;

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { logger } from '../utils/logger';
-import { VectorStore } from '../storage/VectorStore';
 import { DatabaseService } from '../storage/DatabaseService';
+import { VectorStore } from '../storage/VectorStore';
+import { logger } from '../utils/logger';
 
 export interface Message {
   role: 'user' | 'assistant' | 'system';

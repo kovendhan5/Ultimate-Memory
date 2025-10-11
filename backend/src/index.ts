@@ -1,15 +1,15 @@
-import express, { Express, Request, Response } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
 import compression from 'compression';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import express, { Express, Request, Response } from 'express';
+import helmet from 'helmet';
+import aiRoutes from './api/routes/ai.routes';
+import analyticsRoutes from './api/routes/analytics.routes';
+import memoryRoutes from './api/routes/memory.routes';
+import userRoutes from './api/routes/user.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { rateLimiter } from './middleware/rateLimiter';
 import { logger } from './utils/logger';
-import memoryRoutes from './api/routes/memory.routes';
-import userRoutes from './api/routes/user.routes';
-import aiRoutes from './api/routes/ai.routes';
-import analyticsRoutes from './api/routes/analytics.routes';
 
 // Load environment variables
 dotenv.config();

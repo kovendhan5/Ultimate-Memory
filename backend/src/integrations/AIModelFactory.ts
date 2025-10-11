@@ -1,8 +1,8 @@
-import { OpenAIClient } from './OpenAIClient';
+import { Message } from '../core/MemoryManager';
 import { AnthropicClient } from './AnthropicClient';
 import { GoogleClient } from './GoogleClient';
 import { LocalModelClient } from './LocalModelClient';
-import { Message } from '../core/MemoryManager';
+import { OpenAIClient } from './OpenAIClient';
 
 export interface AIResponse {
   content: string;
