@@ -3,6 +3,7 @@
 ## Quick Start with Docker
 
 ### Prerequisites
+
 - Docker installed
 - Docker Compose installed
 
@@ -52,21 +53,25 @@ docker-compose down -v
 ## Services
 
 ### Backend
+
 - Node.js API server
 - Runs on port 3000
 - Connects to PostgreSQL and Redis
 
 ### Frontend
+
 - React application served by Nginx
 - Runs on port 80
 - Proxies API requests to backend
 
 ### PostgreSQL
+
 - Primary database
 - Persistent storage for memories
 - Data stored in Docker volume
 
 ### Redis
+
 - Caching layer
 - Session storage
 - Rate limiting
@@ -104,7 +109,7 @@ docker-compose -f docker-compose.prod.yml up -d
 Create `docker-compose.prod.yml`:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   # ... existing services ...
@@ -274,21 +279,25 @@ LOG_LEVEL=info
 ## Security Best Practices
 
 1. **Change default passwords**
+
    ```env
    POSTGRES_PASSWORD=use-strong-password-here
    JWT_SECRET=use-long-random-string-min-32-chars
    ```
 
 2. **Use secrets management**
+
    - Docker Secrets
    - AWS Secrets Manager
    - HashiCorp Vault
 
 3. **Enable SSL/TLS**
+
    - Use Let's Encrypt
    - Configure HTTPS only
 
 4. **Network security**
+
    - Use private networks
    - Firewall rules
    - VPC isolation
