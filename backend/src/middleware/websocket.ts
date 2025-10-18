@@ -1,8 +1,8 @@
-import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { config } from '../config';
 import { logger } from '../utils/logger';
 import { verifyToken } from './auth';
-import { config } from '../config';
 
 export interface SocketUser {
   id: string;

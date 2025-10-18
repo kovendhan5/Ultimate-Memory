@@ -1,6 +1,6 @@
-import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { Pool } from 'pg';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../../.env') });

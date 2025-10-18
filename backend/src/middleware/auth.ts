@@ -86,3 +86,15 @@ export const generateToken = (payload: UserPayload): string => {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   });
 };
+
+/**
+ * Verify JWT token (for WebSocket authentication)
+ */
+export const verifyToken = (token: string): UserPayload & { username?: string } => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET not configured');
+  }
+
+  return jwt.verify(token, secret) as UserPayload & { username?: string };
+};

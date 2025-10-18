@@ -1,17 +1,27 @@
-# Ultimate Memory
+# Ultimate Memory 🧠
 
-A universal memory management system that allows different AI models to share the same conversation history and context, giving you complete control over your AI interactions.
+> **A universal memory management system for AI conversations**
 
-## 🌟 Features
+Share conversation history seamlessly across different AI models (GPT-4, Claude, Gemini) while maintaining complete control over your data. Now with **real-time streaming**, **PostgreSQL persistence**, and **production-ready deployment**.
+
+## ✨ What's New (October 2025)
+
+- 🔥 **Real-Time Streaming**: Token-by-token responses like ChatGPT
+- 🗄️ **PostgreSQL Support**: Persistent storage with pgvector for fast similarity search
+- ⚡ **WebSocket Server**: Live updates, typing indicators, and presence tracking
+- 🚀 **Production Ready**: Docker deployment with migrations and monitoring
+- 📚 **Comprehensive Docs**: Complete guides for PostgreSQL, WebSocket, and deployment
+
+## 🌟 Core Features
 
 - **Universal Memory**: Single source of truth for all AI conversations
-- **Multi-Model Support**: Works with OpenAI, Anthropic, Google, Cohere, and more
-- **Smart Context Management**: Automatically manages token limits and relevance
-- **User Control**: Full control over what gets stored and shared
-- **Privacy First**: Your data, your rules - local or cloud storage options
-- **Conversation Branching**: Create and manage multiple conversation threads
-- **Search & Analytics**: Find and analyze past interactions
-- **Export/Import**: Move your memory between systems
+- **Multi-Model Support**: OpenAI (GPT-4/3.5), Anthropic (Claude), Google (Gemini), Local (Ollama)
+- **Real-Time Streaming**: Token-by-token responses via WebSocket or SSE
+- **Smart Context Management**: Automatic summarization and relevance scoring
+- **Flexible Storage**: In-memory (dev) or PostgreSQL (production) with one config change
+- **Vector Search**: Semantic similarity search with embeddings (pgvector support)
+- **Privacy First**: Self-hosted, your data never leaves your infrastructure
+- **Production Ready**: Docker deployment, migrations, monitoring, and logging
 
 ## 🏗️ Architecture
 

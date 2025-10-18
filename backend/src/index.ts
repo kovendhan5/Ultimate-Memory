@@ -3,12 +3,16 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, Request, Response } from 'express';
 import helmet from 'helmet';
+import { createServer } from 'http';
 import aiRoutes from './api/routes/ai.routes';
 import analyticsRoutes from './api/routes/analytics.routes';
 import memoryRoutes from './api/routes/memory.routes';
+import streamingRoutes from './api/routes/streaming.routes';
 import userRoutes from './api/routes/user.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { rateLimiter } from './middleware/rateLimiter';
+import { initializeWebSocket } from './middleware/websocket';
+import { DatabaseFactory } from './storage/DatabaseFactory';
 import { logger } from './utils/logger';
 
 // Load environment variables
@@ -52,6 +56,7 @@ app.use(`${apiPrefix}/memory`, memoryRoutes);
 app.use(`${apiPrefix}/users`, userRoutes);
 app.use(`${apiPrefix}/ai`, aiRoutes);
 app.use(`${apiPrefix}/analytics`, analyticsRoutes);
+app.use(`${apiPrefix}/stream`, streamingRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
@@ -64,22 +69,59 @@ app.use((req: Request, res: Response) => {
 // Error Handler
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  logger.info(`🚀 Ultimate Memory API server running on port ${PORT}`);
-  logger.info(`📝 Environment: ${process.env.NODE_ENV}`);
-  logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
-});
+// Create HTTP server for WebSocket support
+const httpServer = createServer(app);
+
+// Initialize WebSocket
+const wsManager = initializeWebSocket(httpServer);
+
+// Initialize database on startup
+async function startServer() {
+  try {
+    // Initialize database
+    const db = await DatabaseFactory.getInstance();
+    logger.info('✅ Database initialized successfully');
+
+    // Start server
+    httpServer.listen(PORT, () => {
+      logger.info(`🚀 Ultimate Memory API server running on port ${PORT}`);
+      logger.info(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
+      logger.info(`🔌 WebSocket: ws://localhost:${PORT}`);
+      logger.info(`📊 API: http://localhost:${PORT}${apiPrefix}`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM signal received: closing HTTP server');
-  process.exit(0);
-});
+async function shutdown() {
+  logger.info('Shutting down gracefully...');
+  
+  try {
+    await DatabaseFactory.closeDatabase();
+    httpServer.close(() => {
+      logger.info('Server closed');
+      process.exit(0);
+    });
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT signal received: closing HTTP server');
-  process.exit(0);
-});
+    // Force close after 10 seconds
+    setTimeout(() => {
+      logger.error('Forced shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+  } catch (error) {
+    logger.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
+// Start the server
+startServer();
 
 export default app;
