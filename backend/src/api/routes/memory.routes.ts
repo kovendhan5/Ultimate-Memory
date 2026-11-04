@@ -1,14 +1,18 @@
 import { Request, Response, Router } from 'express';
 import { z } from 'zod';
-import { MemoryManager } from '../../core/MemoryManager';
+import { MemoryManager, type MemoryEntry, type MemoryQuery } from '../../core/MemoryManager';
+import { authenticateToken } from '../../middleware/auth';
 import { AppError } from '../../middleware/errorHandler';
 
 const router = Router();
 const memoryManager = new MemoryManager();
+router.use(authenticateToken);
+
+type StoreRequest = Pick<MemoryEntry, 'conversationId' | 'messages' | 'model' | 'metadata'>;
+type RetrieveRequest = Omit<MemoryQuery, 'userId' | 'startDate' | 'endDate'>;
 
 // Validation schemas
-const storeSchema = z.object({
-  userId: z.string(),
+const storeSchema: z.ZodType<StoreRequest> = z.object({
   conversationId: z.string(),
   messages: z.array(z.object({
     role: z.enum(['user', 'assistant', 'system']),
@@ -23,8 +27,7 @@ const storeSchema = z.object({
   }).optional()
 });
 
-const querySchema = z.object({
-  userId: z.string(),
+const querySchema: z.ZodType<RetrieveRequest> = z.object({
   query: z.string().optional(),
   conversationId: z.string().optional(),
   tags: z.array(z.string()).optional(),
@@ -39,7 +42,23 @@ const querySchema = z.object({
 router.post('/store', async (req: Request, res: Response, next) => {
   try {
     const data = storeSchema.parse(req.body);
-    const memory = await memoryManager.store(data);
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new AppError('Authenticated user not found', 401);
+    }
+
+    if (!data.conversationId || !data.messages) {
+      throw new AppError('conversationId and messages are required', 400);
+    }
+
+    const memoryData: Parameters<MemoryManager['store']>[0] = {
+      userId,
+      conversationId: data.conversationId,
+      messages: data.messages,
+      model: data.model,
+      metadata: data.metadata
+    };
+    const memory = await memoryManager.store(memoryData);
     
     res.status(201).json({
       success: true,
@@ -61,7 +80,16 @@ router.post('/store', async (req: Request, res: Response, next) => {
 router.post('/retrieve', async (req: Request, res: Response, next) => {
   try {
     const query = querySchema.parse(req.body);
-    const memories = await memoryManager.retrieve(query);
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new AppError('Authenticated user not found', 401);
+    }
+
+    const memoryQuery: Parameters<MemoryManager['retrieve']>[0] = {
+      ...query,
+      userId
+    };
+    const memories = await memoryManager.retrieve(memoryQuery);
     
     res.json({
       success: true,
@@ -83,10 +111,15 @@ router.post('/retrieve', async (req: Request, res: Response, next) => {
  */
 router.post('/context', async (req: Request, res: Response, next) => {
   try {
-    const { userId, query, conversationId, maxTokens, includeRelated } = req.body;
+    const { query, conversationId, maxTokens, includeRelated } = req.body;
+    const userId = req.user?.userId;
     
-    if (!userId || !query) {
-      throw new AppError('userId and query are required', 400);
+    if (!userId) {
+      throw new AppError('Authenticated user not found', 401);
+    }
+
+    if (!query) {
+      throw new AppError('query is required', 400);
     }
 
     const context = await memoryManager.getContext(userId, query, {
@@ -112,10 +145,10 @@ router.post('/context', async (req: Request, res: Response, next) => {
 router.delete('/:memoryId', async (req: Request, res: Response, next) => {
   try {
     const { memoryId } = req.params;
-    const { userId } = req.body;
+    const userId = req.user?.userId;
 
     if (!userId) {
-      throw new AppError('userId is required', 400);
+      throw new AppError('Authenticated user not found', 401);
     }
 
     await memoryManager.delete(userId, memoryId);
@@ -125,6 +158,11 @@ router.delete('/:memoryId', async (req: Request, res: Response, next) => {
       message: 'Memory deleted successfully'
     });
   } catch (error) {
+    if (error instanceof Error && error.message === 'Memory not found for user') {
+      next(new AppError('Memory not found', 404));
+      return;
+    }
+
     next(error);
   }
 });
@@ -136,10 +174,10 @@ router.delete('/:memoryId', async (req: Request, res: Response, next) => {
 router.delete('/conversation/:conversationId', async (req: Request, res: Response, next) => {
   try {
     const { conversationId } = req.params;
-    const { userId } = req.body;
+    const userId = req.user?.userId;
 
     if (!userId) {
-      throw new AppError('userId is required', 400);
+      throw new AppError('Authenticated user not found', 401);
     }
 
     await memoryManager.delete(userId, undefined, conversationId);
@@ -154,12 +192,16 @@ router.delete('/conversation/:conversationId', async (req: Request, res: Respons
 });
 
 /**
- * GET /api/v1/memory/stats/:userId
+ * GET /api/v1/memory/stats
  * Get memory statistics for a user
  */
-router.get('/stats/:userId', async (req: Request, res: Response, next) => {
+router.get('/stats/:userId?', async (req: Request, res: Response, next) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new AppError('Authenticated user not found', 401);
+    }
+
     const stats = await memoryManager.getStats(userId);
     
     res.json({

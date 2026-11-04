@@ -185,6 +185,11 @@ export class MemoryManager {
   async delete(userId: string, memoryId?: string, conversationId?: string): Promise<void> {
     try {
       if (memoryId) {
+        const [memory] = await this.db.getMemoriesByIds([memoryId]);
+        if (!memory || memory.userId !== userId) {
+          throw new Error('Memory not found for user');
+        }
+
         await this.db.deleteMemory(memoryId);
         await this.vectorStore.delete(memoryId);
       } else if (conversationId) {
